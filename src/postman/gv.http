@@ -1,0 +1,30 @@
+
+@url_dev = http://localhost:8080
+
+
+### create gv
+POST {{url_dev}}/api/teacher/create-teacher
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OGE3NGU2ZWMxMmE3YjAwZDc3ZmNlMSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTcyMDUzNzIzMiwiZXhwIjoxNzIwNzk2NDMyfQ.c85W0AosmFCnkMzrBL98-sLKraAFJQSqF2r5Ql7BgEU
+
+
+{
+  "mgv": "GV123",
+  "fullname": "Nguyen Van B"
+}
+
+
+### get gvId
+
+GET {{url_dev}}/api/teacher/668d13949789c62f51b7b381
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OGQxMzk0OTc4OWM2MmY1MWI3YjM4MSIsImlzQWRtaW4iOmZhbHNlLCJpc0dWIjp0cnVlLCJpYXQiOjE3MjA3OTgxNjQsImV4cCI6MTcyMTA1NzM2NH0.f81SJbbqerWkiCBOTCoVpyv2rv4R1c8TjRyVftkUfoM
+
+
+### get gv All
+
+GET {{url_dev}}/api/teacher/getAll
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjA5ODA4MzQsImV4cCI6MTcyMTI0MDAzNH0.-XfGO5BPcUG00MRcJcZQ3wOEJzeZHU8NtR9Ga5Wajuk
+
+

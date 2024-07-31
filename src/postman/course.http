@@ -1,0 +1,19 @@
+@url_dev = http://localhost:8080
+
+### Create a new Semester
+
+POST {{url_dev}}/api/course/add-course
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjA5ODA4MzQsImV4cCI6MTcyMTI0MDAzNH0.-XfGO5BPcUG00MRcJcZQ3wOEJzeZHU8NtR9Ga5Wajuk
+
+{
+  "name": "Ngôn ngữ Hàn",
+  "code": "NNA",
+  "credit": 3,
+  "majorId": "6694a48a586d5e3d11af8021"
+}
+
+### get all course
+GET {{url_dev}}/api/course/getAll
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjA5ODA4MzQsImV4cCI6MTcyMTI0MDAzNH0.-XfGO5BPcUG00MRcJcZQ3wOEJzeZHU8NtR9Ga5Wajuk

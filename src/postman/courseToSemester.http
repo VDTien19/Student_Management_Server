@@ -1,0 +1,20 @@
+
+@url_dev = http://localhost:8080
+
+### add course to semester
+
+POST {{url_dev}}/api/courseToSemester/add
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OGE3NGU2ZWMxMmE3YjAwZDc3ZmNlMSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTcyMDUzNzIzMiwiZXhwIjoxNzIwNzk2NDMyfQ.c85W0AosmFCnkMzrBL98-sLKraAFJQSqF2r5Ql7BgEU
+
+{
+  "courseId": "668e3dacadab9d75fa0f2f56",
+  "semesterId": "668d5bbc162dff839c9adda4"
+}
+
+
+### get course theo semester
+
+GET {{url_dev}}/api/courseToSemester/668d5bbc162dff839c9adda4/courses
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OGE3NGU2ZWMxMmE3YjAwZDc3ZmNlMSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTcyMDUzNzIzMiwiZXhwIjoxNzIwNzk2NDMyfQ.c85W0AosmFCnkMzrBL98-sLKraAFJQSqF2r5Ql7BgEU

@@ -1,0 +1,21 @@
+
+
+@url_dev = http://localhost:8080
+
+### get all majors
+
+GET {{url_dev}}/api/major/getAll
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OGQxMzk0OTc4OWM2MmY1MWI3YjM4MSIsImlzQWRtaW4iOmZhbHNlLCJpc0dWIjp0cnVlLCJpYXQiOjE3MjEwMzAyMDQsImV4cCI6MTcyMTI4OTQwNH0.fbzYQdcj2-6uSfEoc0oyMBqh8uaDtchxU5i8YefxFeQ
+
+
+### create major
+
+POST {{url_dev}}/api/major/create
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjA5ODA4MzQsImV4cCI6MTcyMTI0MDAzNH0.-XfGO5BPcUG00MRcJcZQ3wOEJzeZHU8NtR9Ga5Wajuk
+
+{
+  "name": "Công nghệ thông tin",
+  "code": "CNTT"
+}

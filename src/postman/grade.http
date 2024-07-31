@@ -1,0 +1,31 @@
+
+@url_dev=http://localhost:8080
+
+
+### get ALL Grades
+
+GET {{url_dev}}/api/grade/getAll
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OGE3NGU2ZWMxMmE3YjAwZDc3ZmNlMSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTcyMDUzNzIzMiwiZXhwIjoxNzIwNzk2NDMyfQ.c85W0AosmFCnkMzrBL98-sLKraAFJQSqF2r5Ql7BgEU
+
+
+
+### get A Grades
+
+GET {{url_dev}}/api/grade/668d70bfdbd7224cc0e518d2
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OGE3NGU2ZWMxMmE3YjAwZDc3ZmNlMSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTcyMDUzNzIzMiwiZXhwIjoxNzIwNzk2NDMyfQ.c85W0AosmFCnkMzrBL98-sLKraAFJQSqF2r5Ql7BgEU
+
+
+### create a grade with student
+
+POST {{url_dev}}/api/grade/create
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjEzMjA3OTEsImV4cCI6MTcyMTU3OTk5MX0.XZcgMoIorLpNFrp5GCPUwlxsCVSA8NJ9p2aicfcczxQ
+
+{
+  "courseId": "669606f1e5386733b411afd6",
+  "midScore": 4,
+  "finalScore": 7,
+  "transcriptId": "66995778ed0c6771486a54d9"
+}

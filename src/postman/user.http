@@ -1,0 +1,106 @@
+@url_dev=http://localhost:8080
+
+### create admin
+
+POST {{url_dev}}/api/user/create-admin
+Content-Type: application/json
+
+{
+  "msv": "a41954",
+  "password": "a41954"
+  
+}
+
+
+### Create user
+POST {{url_dev}}/api/user/create-user
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjEzMjA3OTEsImV4cCI6MTcyMTU3OTk5MX0.XZcgMoIorLpNFrp5GCPUwlxsCVSA8NJ9p2aicfcczxQ
+
+{
+  "fullname": "Nguyen Vu Tien",
+  "msv": "A32971",
+  "year": 2024,
+  "gvcn": "GV123",
+  "gender": "Male",
+  "className": "CS2024",
+  "email": "nguyenvtien@example.com",
+  "majorId": "6696101482c5d59352695252"
+}
+
+
+
+### Get user
+
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OGE3NGU2ZWMxMmE3YjAwZDc3ZmNlMSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTcyMDM0OTk1NCwiZXhwIjoxNzUxODg1OTU0fQ.mlNbbS20rsMbAZg0cUCvF921TPD1QHxyd6rlZvpFqgg
+
+GET {{url_dev}}/api/user/getAll
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjEzMjA3OTEsImV4cCI6MTcyMTU3OTk5MX0.XZcgMoIorLpNFrp5GCPUwlxsCVSA8NJ9p2aicfcczxQ
+
+### get user id
+GET {{url_dev}}/api/user/6697a825eeb7c12c9b97a545
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjEyMTM0MTQsImV4cCI6MTcyMTI5OTgxNH0.uLsQ2A10PeQv3sQy2mSzYDoEwOeCUG4lOThuAwDE1ss
+
+
+### search Student
+
+POST {{url_dev}}/api/user/searchStudents?keyword=A3
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjEyMTM0MTQsImV4cCI6MTcyMTI5OTgxNH0.uLsQ2A10PeQv3sQy2mSzYDoEwOeCUG4lOThuAwDE1ss
+
+
+### update user in4
+
+PUT {{url_dev}}/api/user/updateProfile/6697a84aeeb7c12c9b97a54d
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjEyMTM0MTQsImV4cCI6MTcyMTI5OTgxNH0.uLsQ2A10PeQv3sQy2mSzYDoEwOeCUG4lOThuAwDE1ss
+
+
+{
+  "fatherName": "Nguyen Van A",
+  "motherName": "Nguyen Thi B",
+  "fatherJob": "Engineer",
+  "motherJob": "Teacher",
+  "parentPhone": "0123456789",
+  "nation": "Vietnam",
+  "presentAddress": "123 Main St",
+  "permanentAddress": "456 Secondary St",
+  "firstName": "John",
+  "lastName": "Doe",
+  "address": "789 Tertiary St",
+  "email": "john.doe@example.com",
+  "dob": "2000-01-01",
+  "phone": "0987654321",
+  "gender": "Male"
+}
+
+
+### Cập nhật thông tin sinh viên (admin)
+PUT {{url_dev}}/api/user/updateByAdmin/6697a84aeeb7c12c9b97a54d
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjEyMTM0MTQsImV4cCI6MTcyMTI5OTgxNH0.uLsQ2A10PeQv3sQy2mSzYDoEwOeCUG4lOThuAwDE1ss
+
+{
+  "gvcn": "668d13949789c62f51b7b381",  
+  "majorId": "6696101482c5d59352695252"
+}
+
+
+### delete User
+
+DELETE {{url_dev}}/api/user/delete/6697a84aeeb7c12c9b97a54d
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjEzMjA3OTEsImV4cCI6MTcyMTU3OTk5MX0.XZcgMoIorLpNFrp5GCPUwlxsCVSA8NJ9p2aicfcczxQ
+
+
+### restore user
+
+PUT {{url_dev}}/api/user/restore
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjEzMjA3OTEsImV4cCI6MTcyMTU3OTk5MX0.XZcgMoIorLpNFrp5GCPUwlxsCVSA8NJ9p2aicfcczxQ
+
+{
+  "msv": "A32971"
+}

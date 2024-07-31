@@ -1,0 +1,32 @@
+
+@url_dev=http://localhost:8080
+
+
+### Login
+POST {{url_dev}}/api/auth/login
+Content-Type: application/json
+
+{ 
+    "msv": "GV123",
+    "password": "GV123"
+}
+
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OGE3NGU2ZWMxMmE3YjAwZDc3ZmNlMSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTcyMDM0OTk1NCwiZXhwIjoxNzUxODg1OTU0fQ.mlNbbS20rsMbAZg0cUCvF921TPD1QHxyd6rlZvpFqgg
+
+
+### refresh token
+
+
+POST {{url_dev}}/api/auth/refresh
+Content-Type: application/json
+
+{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OGQxMzk0OTc4OWM2MmY1MWI3YjM4MSIsImlzQWRtaW4iOmZhbHNlLCJpc0dWIjp0cnVlLCJpYXQiOjE3MjE0MDI3ODMsImV4cCI6MTcyMjAwNzU4M30.s41_x3r4rqYpDdCRTtqej64dWSY_nmzUgSdaBh299Do"
+}
+
+
+
+# "tokens": {
+#     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjEzMjA3OTEsImV4cCI6MTcyMTU3OTk5MX0.XZcgMoIorLpNFrp5GCPUwlxsCVSA8NJ9p2aicfcczxQ",
+#     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjEzMjA3OTEsImV4cCI6MTcyMTkyNTU5MX0.jYXd_AlahjdfFYeTCT0LJ3FjQUzExfepcPcGuj1dItI"
+#   }

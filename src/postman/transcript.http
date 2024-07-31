@@ -1,0 +1,21 @@
+
+
+@url_dev = http://localhost:8080
+
+### Create transcript
+
+POST {{url_dev}}/api/transcript/create
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjEzMjA3OTEsImV4cCI6MTcyMTU3OTk5MX0.XZcgMoIorLpNFrp5GCPUwlxsCVSA8NJ9p2aicfcczxQ
+
+{
+  "studentId": "6697a825eeb7c12c9b97a545",
+  "semesterId":"668d5bf2162dff839c9addb0"
+}
+
+
+### Get transcript by Student
+
+GET {{url_dev}}/api/transcript/student/6697a825eeb7c12c9b97a545
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OTE1NjA4MzEyYmViY2M2YjlkY2Y3MCIsImlzQWRtaW4iOnRydWUsImlzR1YiOmZhbHNlLCJpYXQiOjE3MjEzMjA3OTEsImV4cCI6MTcyMTU3OTk5MX0.XZcgMoIorLpNFrp5GCPUwlxsCVSA8NJ9p2aicfcczxQ

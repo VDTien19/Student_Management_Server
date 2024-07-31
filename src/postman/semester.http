@@ -1,0 +1,14 @@
+
+@url_dev = http://localhost:8080
+
+### Create a new Semester
+
+POST {{url_dev}}/api/semester/create
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2OGE3NGU2ZWMxMmE3YjAwZDc3ZmNlMSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTcyMDUzNzIzMiwiZXhwIjoxNzIwNzk2NDMyfQ.c85W0AosmFCnkMzrBL98-sLKraAFJQSqF2r5Ql7BgEU
+
+{
+  "semester": "Kì 3",
+  "group": "Nhóm 3",
+  "year": "2024-2025"
+}
