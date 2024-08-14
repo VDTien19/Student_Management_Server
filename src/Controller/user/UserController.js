@@ -18,7 +18,7 @@ module.exports = {
         path: 'gvcn'
       })
       .populate({
-        path: 'majorId'
+        path: 'majorIds'
       })
 
     if (users) {
@@ -26,8 +26,6 @@ module.exports = {
         const { password, ...rest } = user._doc
         return rest
       })
-
-
       res.status(200).json({ data: data })
     }
 
@@ -41,7 +39,7 @@ module.exports = {
           path: 'gvcn'
         })
         .populate({
-          path: 'majorId'
+          path: 'majorIds'
         })
       if (!user) return res.status(404).json({ message: "User not found" })
       if (user.deleted) {
@@ -50,40 +48,37 @@ module.exports = {
       const { password, ...rest } = user._doc
       return res.status(200).json({ data: rest })
     }
-    catch (e) {
-      res.status(500).json('Server error')
+    catch (error) {
+      console.error('Error fetching user:', error);
+      res.status(500).json({ message: 'Server error', error: error.message });
     }
   },
 
   createUser: async (req, res) => {
-    const { fullname, msv, year, gvcn, gender, className, email, majorId } = req.body
-    const hashPassword = await Encrypt.cryptPassword(msv)
-
+    const { fullname, msv, year, gvcn, gender, className, email, majorIds } = req.body; // Thay đổi majorId thành majorIds
+    const hashPassword = await Encrypt.cryptPassword(msv);
+  
     const validUser = await User.findOne({ msv: msv });
-
+  
     const teacher = await Teacher.findById(gvcn);
-
-    const major = await MajorModel.findById(majorId);
-
-
+    const majors = await MajorModel.find({ _id: { $in: majorIds } }); // Tìm nhiều ngành
+  
     if (validUser && !validUser?.deleted) {
-      throw new BadRequestError('Student already exist')
+      throw new BadRequestError('Student already exists');
     }
-
+  
     if (validUser?.deleted) {
-      throw new BadRequestError('Student deleted, You want restore student')
+      throw new BadRequestError('Student deleted, You want to restore student');
     }
-
-
+  
     if (!teacher) {
-      throw new NotFoundError('GV not found')
+      throw new NotFoundError('Teacher not found');
     }
-
-    if (!major) {
-      throw new NotFoundError('Major not found')
+  
+    if (majors.length !== majorIds.length) { // Kiểm tra tất cả ngành học có tồn tại
+      throw new NotFoundError('One or more majors not found');
     }
-
-
+  
     let newUser = await User.create({
       deleted: false,
       msv: msv,
@@ -96,18 +91,19 @@ module.exports = {
       class: className,
       gender: gender,
       email: email,
-      majorId: majorId,
-    })
-
-    // Thêm sinh viên vào chuyên ngành
-    await major.students.push(newUser._id);
-    await major.save();
-
+      majorIds: majorIds, // Sử dụng majorIds thay vì majorId
+    });
+  
+    // Thêm sinh viên vào tất cả các ngành
+    await MajorModel.updateMany(
+      { _id: { $in: majorIds } },
+      { $push: { students: newUser._id } }
+    );
+  
     // Populate thông tin chuyên ngành cho sinh viên mới
-    newUser = await User.findById(newUser._id).populate('majorId');
-
-    res.status(200).json({ message: 'Create student success', data: { user: newUser } })
-
+    newUser = await User.findById(newUser._id).populate('majorIds');
+  
+    res.status(200).json({ message: 'Create student success', data: { user: newUser } });
   },
 
   createAdmin: async (req, res) => {
@@ -143,19 +139,24 @@ module.exports = {
 
 
   deleteUser: async (req, res) => {
-    const id = req.params.id
-    const user = await User.findById(id)
+    const id = req.params.id;
+    const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ message: 'Student not exists' })
+      return res.status(404).json({ message: 'Student not exists' });
     }
     user.deleted = true;
-    await user.save()
-
+    await user.save();
+  
+    // Cập nhật tất cả các ngành mà sinh viên đang theo học
+    await MajorModel.updateMany(
+      { students: id },
+      { $pull: { students: id } }
+    );
+  
     // Cập nhật tất cả các transcript có studentId tương ứng
     await Transcript.updateMany({ student: id }, { deleted: true });
-
-
-    res.status(200).json({ message: 'Delete student success' })
+  
+    res.status(200).json({ message: 'Delete student success' });
   },
 
   updateProfile: async (req, res) => {
@@ -190,56 +191,55 @@ module.exports = {
   updateStudentByAdmin: async (req, res) => {
     const { id } = req.params;
     const data = req.body;
-
-    // Tìm sinh viên theo ID và populate các trường liên quan
+  
     const oldStudent = await User.findById(id)
-      .populate('majorId')
-      .populate('gvcn'); // Thêm populate cho gvcn để lấy thông tin giáo viên
-
+      .populate('majorIds') // Cập nhật populate cho majorIds
+      .populate('gvcn');
+  
     if (!oldStudent) {
       throw new NotFoundError('Student not found');
     }
-
+  
     if (oldStudent?.deleted) {
-      throw new BadRequestError('Student deleted, You want restore student')
+      throw new BadRequestError('Student deleted, You want to restore student');
     }
-
-    // Kiểm tra tính hợp lệ của gvcn và majorId từ data
+  
     const gvcn = await Teacher.findById(data.gvcn);
     if (!gvcn) {
       throw new NotFoundError('Teacher not found');
     }
-
-    const major = await MajorModel.findById(data.majorId);
-    if (!major) {
-      throw new NotFoundError('Major not found');
+  
+    const majors = await MajorModel.find({ _id: { $in: data.majorIds } });
+    if (majors.length !== data.majorIds.length) {
+      throw new NotFoundError('One or more majors not found');
     }
-
-    // Chỉ cần cập nhật danh sách sinh viên nếu majorId thực sự thay đổi
-    if (oldStudent.majorId.toString() !== data.majorId) {
+  
+    // Cập nhật danh sách sinh viên trong các ngành
+    if (oldStudent.majorIds.toString() !== data.majorIds.toString()) {
       // Xóa sinh viên khỏi chuyên ngành cũ
-      await MajorModel.findByIdAndUpdate(oldStudent.majorId, { $pull: { students: id } });
-
-      // Thêm sinh viên vào chuyên ngành mới
-      await MajorModel.findByIdAndUpdate(data.majorId, { $push: { students: id } });
+      await MajorModel.updateMany(
+        { _id: { $in: oldStudent.majorIds } },
+        { $pull: { students: id } }
+      );
+  
+      // Thêm sinh viên vào các chuyên ngành mới
+      await MajorModel.updateMany(
+        { _id: { $in: data.majorIds } },
+        { $push: { students: id } }
+      );
     }
-
-    // Cập nhật thông tin sinh viên
+  
     oldStudent.gvcn = data.gvcn;
-    oldStudent.majorId = data.majorId;
-
-    // Cập nhật danh sách sinh viên trong các bảng liên quan sau khi lưu
+    oldStudent.majorIds = data.majorIds;
+  
     await oldStudent.save();
-
-    // Lấy thông tin sinh viên đã cập nhật với các trường populate
+  
     const student = await User.findById(id)
-      .populate('majorId')
+      .populate('majorIds')
       .populate('gvcn');
-
-    // Trả về thông tin sinh viên đã cập nhật
+  
     const { password, ...rest } = student._doc;
     res.status(200).json({ message: 'Update success', data: rest });
-
   },
 
 
@@ -258,20 +258,17 @@ module.exports = {
 
   searchStudents: async (req, res) => {
     let { keyword } = req.query;
-    
-    // Bỏ khoảng trắng ở đầu và cuối từ khóa
     keyword = keyword.trim();
-
+  
     console.log(`Searching ${keyword}`);
-
+  
     // Tìm kiếm các majors phù hợp với keyword
     const majors = await MajorModel.find({
       name: { $regex: keyword, $options: 'i' }
     }).select('_id');
-
-    // Lấy danh sách các majorId phù hợp
+  
     const majorIds = majors.map(major => major._id);
-
+  
     // Tìm kiếm các sinh viên phù hợp với keyword trong các trường của User
     const studentsByKeyword = await User.find({
       $or: [
@@ -284,37 +281,37 @@ module.exports = {
       deleted: false,
       isAdmin: false,
     }).populate({
-        path: 'majorId',
-        select: 'name'
+      path: 'majorIds', // Sử dụng majorIds thay vì majorId
+      select: 'name'
     }).collation({ locale: 'vi', strength: 1 });
-
+  
     console.log("student by key: ", studentsByKeyword);
     console.log("-----------------------------------");
-
-    // Tìm kiếm các sinh viên theo majorId
+  
+    // Tìm kiếm các sinh viên theo majorIds
     const studentsByMajor = await User.find({
-      majorId: { $in: majorIds },
+      majorIds: { $in: majorIds }, // Tìm kiếm theo mảng majorIds
       deleted: false,
       isAdmin: false,
     }).populate({
-        path: 'majorId',
-        select: 'name'
+      path: 'majorIds',
+      select: 'name'
     }).collation({ locale: 'vi', strength: 1 });
-
+  
     console.log(studentsByMajor);
-
+  
     // Kết hợp kết quả từ cả hai truy vấn
     const students = [...studentsByKeyword, ...studentsByMajor];
-
+  
     // Loại bỏ các sinh viên trùng lặp
-    const uniqueStudents = students.filter((student, index, self) => 
+    const uniqueStudents = students.filter((student, index, self) =>
       index === self.findIndex((s) => s._id.toString() === student._id.toString())
     );
-
+  
     if (uniqueStudents.length === 0) {
       throw new NotFoundError('No students found');
     }
-
+  
     res.status(200).json({ data: uniqueStudents });
   },
 

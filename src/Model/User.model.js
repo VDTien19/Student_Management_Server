@@ -1,7 +1,6 @@
-const { Schema, model } = require('mongoose')
+const { Schema, model } = require('mongoose');
 
-
-const User = new Schema({
+const UserSchema = new Schema({
   deleted: {
     type: Boolean,
     default: false
@@ -10,21 +9,43 @@ const User = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Teacher'
   },
-  fullname: String,
+  fullname: {
+    type: String,
+    required: true
+  },
   firstName: String,
   lastName: String,
-  msv: String,
-  password: String,
-  majorId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Major'
+  msv: {
+    type: String,
+    required: true,
+    unique: true
   },
+  password: {
+    type: String,
+    required: true
+  },
+  majorIds: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Major',
+    },
+  ], // Sử dụng mảng để lưu trữ nhiều ngành học
   year: String,
-  isAdmin: Boolean,
-  isGV: Boolean,
+  isAdmin: {
+    type: Boolean,
+    default: false
+  },
+  isGV: {
+    type: Boolean,
+    default: false
+  },
   dob: String,
   phone: String,
-  email: String,
+  email: {
+    type: String,
+    required: true,  // Yêu cầu phải có khi tạo mới sv
+    unique: true  // Đảm bào tính duy nhất
+  },
   gender: String,
   country: String,
   address: String,
@@ -39,6 +60,9 @@ const User = new Schema({
     presentAddress: String,
     permanentAddress: String
   }
-})
-const UserModel = model("User", User)
-module.exports = UserModel
+}, {
+  timestamps: true // Tự động thêm createdAt và updatedAt
+});
+
+const UserModel = model("User", UserSchema);
+module.exports = UserModel;
