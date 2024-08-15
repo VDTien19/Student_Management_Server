@@ -9,6 +9,7 @@ const CourseToSemesterRouter = require('./CourseToSemesterRouter')
 const MajorRouter = require('./majorRouter')
 const TranscriptRouter = require('./transcriptRouter')
 const DiligencyRouter = require('./deligencyRouter')
+const ClassRouter = require('./classRouter')
 const initRoute = (app) => {
   app.use('/api/auth', AuthRouter)
   app.use('/api/user', UserRouter)
@@ -21,6 +22,7 @@ const initRoute = (app) => {
   app.use('/api/major', MajorRouter)
   app.use('/api/transcript', TranscriptRouter)
   app.use('/api/diligency', DiligencyRouter)
+  app.use('api/class', ClassRouter)
 }
 
 module.exports = initRoute

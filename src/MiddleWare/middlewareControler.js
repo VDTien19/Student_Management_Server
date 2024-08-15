@@ -53,8 +53,6 @@ const middlewareControler = {
       }
     });
   }
-
 }
-
 
 module.exports = middlewareControler
