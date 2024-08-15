@@ -30,6 +30,27 @@ module.exports = {
     }
 
   },
+  
+  getAllUserDeleted: async (req, res) => {
+    const users = await User.find({
+      deleted: true
+    })
+      .populate({
+        path: 'gvcn'
+      })
+      .populate({
+        path: 'majorIds'
+      })
+
+    if (users) {
+      const data = users.map(user => {
+        const { password, ...rest } = user._doc
+        return rest
+      })
+      res.status(200).json({ data: data })
+    }
+
+  },
 
   getUser: async (req, res) => {
     const id = req.params.id
