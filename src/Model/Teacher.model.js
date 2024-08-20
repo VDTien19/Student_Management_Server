@@ -11,6 +11,10 @@ const TeacherModel = new Schema({
   password: String,
   isGV: Boolean,
   isAdmin: Boolean,
+  classrooms: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Classroom',
+  }],
 })
 
 const Teacher = model("Teacher", TeacherModel)
