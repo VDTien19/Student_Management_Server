@@ -7,7 +7,8 @@ const UserSchema = new Schema({
   },
   gvcn: {
     type: Schema.Types.ObjectId,
-    ref: 'Teacher'
+    ref: 'Teacher',
+    required: true
   },
   fullname: {
     type: String,
