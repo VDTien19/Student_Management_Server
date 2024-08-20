@@ -70,22 +70,63 @@ const ClassroomController = {
 
     // Cập nhật thông tin của lớp học
     updateClassroom: async (req, res) => {
+        const { name, gvcn, students, year } = req.body;
+    
         try {
+            // Kiểm tra xem lớp học với tên mới đã tồn tại chưa (nếu tên bị thay đổi)
+            if (name) {
+                const existingClassroom = await Classroom.findOne({ name });
+                if (existingClassroom && existingClassroom._id.toString() !== req.params.id) {
+                    return res.status(400).json({ message: "Classroom name already exists" });
+                }
+            }
+    
+            // Kiểm tra xem giáo viên có tồn tại không (nếu gvcn bị thay đổi)
+            let teacher;
+            if (gvcn) {
+                teacher = await Teacher.findById(gvcn);
+                if (!teacher) {
+                    throw new NotFoundError('Teacher not found');
+                }
+            }
+    
+            // Cập nhật lớp học
             const updatedClassroom = await Classroom.findByIdAndUpdate(
                 req.params.id,
-                { $set: req.body },
+                {
+                    $set: {
+                        name,
+                        gvcn: gvcn || undefined,
+                        students,
+                        year,
+                    }
+                },
                 { new: true }
             );
-
+    
             if (!updatedClassroom || updatedClassroom.deleted) {
                 return res.status(404).json({ message: "Classroom not found" });
             }
-
+    
+            // Nếu giáo viên quản lý lớp bị thay đổi, cập nhật thông tin lớp trong giáo viên
+            if (gvcn && teacher) {
+                // Xóa lớp học cũ khỏi danh sách của giáo viên trước
+                const oldTeacher = await Teacher.findById(updatedClassroom.gvcn);
+                if (oldTeacher) {
+                    oldTeacher.classrooms.pull(updatedClassroom._id);
+                    await oldTeacher.save();
+                }
+    
+                // Thêm lớp học vào danh sách của giáo viên mới
+                teacher.classrooms.push(updatedClassroom._id);
+                await teacher.save();
+            }
+    
             res.status(200).json(updatedClassroom);
         } catch (error) {
             res.status(500).json({ message: "Server error", error: error.message });
         }
-    },
+    },    
 
     // Xóa mềm lớp học (soft delete)
     deleteClassroom: async (req, res) => {
