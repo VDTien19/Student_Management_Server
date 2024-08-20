@@ -7,7 +7,7 @@ const ClassroomSchema = new Schema({
     required: true,
     unique: true,
   },
-  teacher: {
+  gvcn: {
     type: Schema.Types.ObjectId,
     ref: 'Teacher',
     required: true,
