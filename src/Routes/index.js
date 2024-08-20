@@ -22,7 +22,7 @@ const initRoute = (app) => {
   app.use('/api/major', MajorRouter)
   app.use('/api/transcript', TranscriptRouter)
   app.use('/api/diligency', DiligencyRouter)
-  // app.use('api/class', ClassRouter)
+  app.use('/api/class', ClassRouter)
 }
 
 module.exports = initRoute
