@@ -230,7 +230,7 @@ module.exports = {
   updateStudentByAdmin: async (req, res) => {
     const { id } = req.params;
     const data = req.body;
-  
+
     try {
         const oldStudent = await User.findById(id)
             .populate('majorIds')
@@ -244,33 +244,13 @@ module.exports = {
             throw new BadRequestError('Student deleted, You want to restore student');
         }
 
-        const gvcn = await Teacher.findById(data.gvcn);
-        if (!gvcn) {
-            throw new NotFoundError('Teacher not found');
-        }
+        // Cập nhật thông tin giáo viên chủ nhiệm nếu cần thiết
+        if (data.gvcn && oldStudent.gvcn.toString() !== data.gvcn.toString()) {
+            const gvcn = await Teacher.findById(data.gvcn);
+            if (!gvcn) {
+                throw new NotFoundError('Teacher not found');
+            }
 
-        const majors = await MajorModel.find({ _id: { $in: data.majorIds } });
-        if (majors.length !== data.majorIds.length) {
-            throw new NotFoundError('One or more majors not found');
-        }
-
-        // Cập nhật danh sách sinh viên trong các ngành nếu có thay đổi
-        if (oldStudent.majorIds.toString() !== data.majorIds.toString()) {
-            // Xóa sinh viên khỏi chuyên ngành cũ
-            await MajorModel.updateMany(
-                { _id: { $in: oldStudent.majorIds } },
-                { $pull: { students: id } }
-            );
-  
-            // Thêm sinh viên vào các chuyên ngành mới
-            await MajorModel.updateMany(
-                { _id: { $in: data.majorIds } },
-                { $push: { students: id } }
-            );
-        }
-
-        // Nếu giáo viên chủ nhiệm thay đổi, cập nhật lớp học
-        if (oldStudent.gvcn.toString() !== data.gvcn.toString()) {
             // Xóa sinh viên khỏi lớp học cũ của giáo viên cũ
             const oldClassroom = await Classroom.findOne({ gvcn: oldStudent.gvcn });
             if (oldClassroom) {
@@ -284,16 +264,38 @@ module.exports = {
                 newClassroom.students.push(id);
                 await newClassroom.save();
             }
+
+            oldStudent.gvcn = data.gvcn;
         }
 
-        // Cập nhật thông tin sinh viên
-        oldStudent.gvcn = data.gvcn;
-        oldStudent.majorIds = data.majorIds;
-        oldStudent.fullname = data.fullname || oldStudent.fullname;
-        oldStudent.year = data.year || oldStudent.year;
-        oldStudent.class = data.className || oldStudent.class;
-        oldStudent.gender = data.gender || oldStudent.gender;
-        oldStudent.email = data.email || oldStudent.email;
+        // Cập nhật danh sách chuyên ngành nếu cần thiết
+        if (data.majorIds && oldStudent.majorIds.toString() !== data.majorIds.toString()) {
+            const majors = await MajorModel.find({ _id: { $in: data.majorIds } });
+            if (majors.length !== data.majorIds.length) {
+                throw new NotFoundError('One or more majors not found');
+            }
+
+            // Xóa sinh viên khỏi chuyên ngành cũ
+            await MajorModel.updateMany(
+                { _id: { $in: oldStudent.majorIds } },
+                { $pull: { students: id } }
+            );
+
+            // Thêm sinh viên vào các chuyên ngành mới
+            await MajorModel.updateMany(
+                { _id: { $in: data.majorIds } },
+                { $push: { students: id } }
+            );
+
+            oldStudent.majorIds = data.majorIds;
+        }
+
+        // Cập nhật các thông tin khác nếu có
+        if (data.fullname) oldStudent.fullname = data.fullname;
+        if (data.year) oldStudent.year = data.year;
+        if (data.className) oldStudent.class = data.className;
+        if (data.gender) oldStudent.gender = data.gender;
+        if (data.email) oldStudent.email = data.email;
 
         await oldStudent.save();
 
@@ -307,7 +309,6 @@ module.exports = {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
   },
-
 
   updateGv: async (req, res) => {
     try {
