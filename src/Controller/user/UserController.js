@@ -1,5 +1,6 @@
 const User = require('../../Model/User.model')
 const Teacher = require('../../Model/Teacher.model')
+const Classroom = require('../../Model/Classroom.model')
 
 const MajorModel = require('../../Model/Major.model')
 const Encrypt = require('../../Utils/encryption')
@@ -76,56 +77,73 @@ module.exports = {
   },
 
   createUser: async (req, res) => {
-    const { fullname, msv, year, gvcn, gender, className, email, majorIds } = req.body; // Thay đổi majorId thành majorIds
+    const { fullname, msv, year, gvcn, gender, className, email, majorIds } = req.body;
     const hashPassword = await Encrypt.cryptPassword(msv);
   
-    const validUser = await User.findOne({ msv: msv });
+    try {
+        // Kiểm tra xem sinh viên đã tồn tại hay chưa
+        const validUser = await User.findOne({ msv: msv });
+        if (validUser && !validUser?.deleted) {
+            throw new BadRequestError('Student already exists');
+        }
   
-    const teacher = await Teacher.findById(gvcn);
-    const majors = await MajorModel.find({ _id: { $in: majorIds } }); // Tìm nhiều ngành
+        if (validUser?.deleted) {
+            throw new BadRequestError('Student deleted, You want to restore student');
+        }
   
-    if (validUser && !validUser?.deleted) {
-      throw new BadRequestError('Student already exists');
+        // Tìm giáo viên chủ nhiệm
+        const teacher = await Teacher.findById(gvcn);
+        if (!teacher) {
+            throw new NotFoundError('Teacher not found');
+        }
+  
+        // Tìm các chuyên ngành
+        const majors = await MajorModel.find({ _id: { $in: majorIds } });
+        if (majors.length !== majorIds.length) {
+            throw new NotFoundError('One or more majors not found');
+        }
+  
+        // Tạo mới sinh viên
+        let newUser = await User.create({
+            deleted: false,
+            msv: msv,
+            gvcn: gvcn,
+            fullname: fullname,
+            password: hashPassword,
+            year: year,
+            isAdmin: false,
+            isGV: false,
+            class: className,
+            gender: gender,
+            email: email,
+            majorIds: majorIds,
+        });
+  
+        // Thêm sinh viên vào tất cả các ngành
+        await MajorModel.updateMany(
+            { _id: { $in: majorIds } },
+            { $push: { students: newUser._id } }
+        );
+  
+        // Tìm lớp học mà giáo viên chủ nhiệm quản lý
+        const classroom = await Classroom.findOne({ gvcn: teacher._id });
+        if (classroom) {
+            // Thêm sinh viên vào lớp học
+            classroom.students.push(newUser._id);
+            await classroom.save();
+        } else {
+            console.warn(`Teacher ${teacher.fullname} does not manage any classroom.`);
+        }
+  
+        // Populate thông tin chuyên ngành cho sinh viên mới
+        newUser = await User.findById(newUser._id).populate('majorIds');
+  
+        res.status(200).json({ message: 'Create student success', data: { user: newUser } });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
-  
-    if (validUser?.deleted) {
-      throw new BadRequestError('Student deleted, You want to restore student');
-    }
-  
-    if (!teacher) {
-      throw new NotFoundError('Teacher not found');
-    }
-  
-    if (majors.length !== majorIds.length) { // Kiểm tra tất cả ngành học có tồn tại
-      throw new NotFoundError('One or more majors not found');
-    }
-  
-    let newUser = await User.create({
-      deleted: false,
-      msv: msv,
-      gvcn: gvcn,
-      fullname: fullname,
-      password: hashPassword,
-      year: year,
-      isAdmin: false,
-      isGV: false,
-      class: className,
-      gender: gender,
-      email: email,
-      majorIds: majorIds, // Sử dụng majorIds thay vì majorId
-    });
-  
-    // Thêm sinh viên vào tất cả các ngành
-    await MajorModel.updateMany(
-      { _id: { $in: majorIds } },
-      { $push: { students: newUser._id } }
-    );
-  
-    // Populate thông tin chuyên ngành cho sinh viên mới
-    newUser = await User.findById(newUser._id).populate('majorIds');
-  
-    res.status(200).json({ message: 'Create student success', data: { user: newUser } });
   },
+
 
   createAdmin: async (req, res) => {
     console.log('Request body:', req.body);
