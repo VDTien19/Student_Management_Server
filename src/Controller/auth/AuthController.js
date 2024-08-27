@@ -47,10 +47,10 @@ const AuthController = {
 
 
   login: async (req, res) => {
-    const { msv, password } = req.body;
-    let user = await User.findOne({ msv: msv })
+    const { username, password } = req.body;
+    let user = await User.findOne({ msv: username })
     if (!user) {
-      user = await Teacher.findOne({ mgv: msv })
+      user = await Teacher.findOne({ mgv: username })
     }
     console.log(user)
 
