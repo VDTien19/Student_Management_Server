@@ -10,26 +10,34 @@ const Transcript = require('../../Model/Transcript.model')
 
 module.exports = {
   getAllUser: async (req, res) => {
-
-    const users = await User.find({
-      deleted: false,
-      isAdmin: false
-    })
-      .populate({
-        path: 'gvcn'
+    try {
+      const users = await User.find({
+        deleted: false,
+        isAdmin: false
       })
-      .populate({
-        path: 'majorIds'
-      })
-
-    if (users) {
-      const data = users.map(user => {
-        const { password, ...rest } = user._doc
-        return rest
-      })
-      res.status(200).json({ data: data })
+        .populate({
+          path: 'gvcn',
+          populate: {
+            path: 'classrooms',
+            select: '_id name' // Chọn các trường cần thiết từ lớp học
+          }
+        })
+        .populate({
+          path: 'majorIds',
+          select: '_id name code'
+        });
+  
+      if (users) {
+        const data = users.map(user => {
+          const { password, ...rest } = user._doc;
+          return rest;
+        });
+        res.status(200).json({ data: data });
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ message: 'Error', error: error.message });
     }
-
   },
   
   getAllUserDeleted: async (req, res) => {
@@ -54,23 +62,29 @@ module.exports = {
   },
 
   getUser: async (req, res) => {
-    const id = req.params.id
+    const id = req.params.id;
     try {
       const user = await User.findById(id)
         .populate({
-          path: 'gvcn'
+          path: 'gvcn',
+          populate: {
+            path: 'classrooms',
+            select: 'name'  // Chọn các trường cần thiết từ lớp học
+          }
         })
         .populate({
-          path: 'majorIds'
-        })
-      if (!user) return res.status(404).json({ message: "User not found" })
+          path: 'majorIds',
+          select: '_id name code'
+        });
+  
+      if (!user) return res.status(404).json({ message: "User not found" });
       if (user.deleted) {
-        return res.status(404).json({ message: "User not exist" })
+        return res.status(404).json({ message: "User not exist" });
       }
-      const { password, ...rest } = user._doc
-      return res.status(200).json({ data: rest })
-    }
-    catch (error) {
+  
+      const { password, ...rest } = user._doc;
+      return res.status(200).json({ data: rest });
+    } catch (error) {
       console.error('Error fetching user:', error);
       res.status(500).json({ message: 'Server error', error: error.message });
     }

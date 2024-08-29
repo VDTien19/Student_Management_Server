@@ -27,13 +27,20 @@ module.exports = {
 
   getAll: async (req, res) => {
     try {
+      // Tìm tất cả giáo viên và populate trường classrooms
       const data = await Teacher.find({})
-      res.status(200).json({ data: data })
+        .populate({
+          path: 'classrooms',
+          select: '_id name' // Chọn các trường cần thiết từ lớp học
+        });
+  
+      res.status(200).json({ data: data });
     } catch (error) {
       console.log(error);
-      res.status(500).json({ message: "Error", error: error })
+      res.status(500).json({ message: "Error", error: error.message });
     }
   },
+  
 
   getTeacher: async (req, res) => {
     const { teacherId } = req.params;
@@ -42,7 +49,7 @@ module.exports = {
         const teacher = await Teacher.findById(teacherId)
             .populate({
                 path: 'classrooms',
-                select: 'name year' // Chọn các trường cần thiết từ lớp học
+                select: '_id name' // Chọn các trường cần thiết từ lớp học
             });
 
         if (!teacher) {
@@ -54,7 +61,4 @@ module.exports = {
         res.status(500).json({ message: 'Error', error: error.message });
     }
   }
-
-
-
 }
