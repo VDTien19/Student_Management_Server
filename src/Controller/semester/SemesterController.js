@@ -9,7 +9,7 @@ const SemesterControler = {
   },
   getSemester: async (req, res) => {
     const { id } = req.params;
-    const semester = await Semester.find(id)
+    const semester = await Semester.findById(id)
     if (!semester) {
       throw new NotFoundError('No semester found')
     }
