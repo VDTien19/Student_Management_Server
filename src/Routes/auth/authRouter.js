@@ -11,8 +11,8 @@ router.post('/login', asyncHandler(AuthController.login))
 router.post('/refresh', asyncHandler(AuthController.requestRefreshToken));
 router.get('/validateToken', asyncHandler(AuthController.validateToken));
 
-// router.post('/change-password', middlewareControler.verifyToken, AuthControler.changePassword)
+router.post('/change-password', middlewareControler.verifyToken, AuthController.changePassword)
 
-// router.post('/reset-password', AuthControler.resetPassword)
+router.post('/reset-password', AuthController.resetPassword)
 
 module.exports = router
