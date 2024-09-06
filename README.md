@@ -81,7 +81,7 @@ Or with yarn:
 yarn dev
 ```
 
-The server will start on `http://localhost:5000` by default.
+The server will start on `http://localhost:8080` by default.
 
 ### Building for Production
 
