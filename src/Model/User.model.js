@@ -8,7 +8,9 @@ const UserSchema = new Schema({
   gvcn: {
     type: Schema.Types.ObjectId,
     ref: 'Teacher',
-    required: true
+    required: function() {
+      return !this.isAdmin; // gvcn is required if the user is not an admin
+    }
   },
   fullname: {
     type: String,
@@ -44,7 +46,9 @@ const UserSchema = new Schema({
   phone: String,
   email: {
     type: String,
-    required: true,  // Yêu cầu phải có khi tạo mới sv
+    required: function() {
+      return !this.isAdmin; // gvcn is required if the user is not an admin
+    },
     unique: true  // Đảm bào tính duy nhất
   },
   gender: String,
