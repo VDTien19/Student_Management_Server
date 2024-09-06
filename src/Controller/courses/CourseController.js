@@ -11,7 +11,7 @@ module.exports = {
 
   getCourse: async (req, res) => {
     const id = req.params.id
-    const course = await Course.findById(id)
+    const course = await Course.findById(id).populate('majorId')
     if (!course) {
       throw new BadRequestError('Course not found')
     }
