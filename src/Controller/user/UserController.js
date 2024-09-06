@@ -160,33 +160,35 @@ module.exports = {
 
 
   createAdmin: async (req, res) => {
-    console.log('Request body:', req.body);
+    // console.log('Request body:', req.body);
     const { msv, password } = req.body;
-    const hashPassword = await Encrypt.cryptPassword(password)
+
+    const hashPassword = await Encrypt.cryptPassword(password);
+
     try {
-      const newAdmin = await User.create({
-        deleted: false,
-        msv: msv,
-        password: hashPassword,
-        isAdmin: true,
-        isGV: false,
-        fullname: 'admin'
-        // Các trường khác có thể được thêm vào nếu cần
-      });
+        const newAdmin = await User.create({
+            deleted: false,
+            msv: msv,
+            password: hashPassword,
+            isAdmin: true,
+            isGV: false,
+            fullname: `admin_${msv}`,
+            email: `admin_${msv}@example.com`
+        });
 
-      console.log(newAdmin);
-      const { password, ...rest } = newAdmin._doc
-      // Trả về msv và password trong phản hồi
-      res.status(200).json({
-        message: 'Tạo admin thành công',
-        data: {
-          user: rest
+        // Truy vấn lại để loại bỏ `majorIds`
+        const adminData = await User.findById(newAdmin._id).select('-majorIds');
 
-        }
-      });
+        console.log(adminData);
+        res.status(200).json({
+            message: 'Tạo admin thành công',
+            data: {
+                user: adminData
+            }
+        });
     } catch (err) {
-      console.log(err);
-      res.status(500).json({ message: 'Lỗi máy chủ', error: err });
+        console.log(err);
+        res.status(500).json({ message: 'Lỗi máy chủ', error: err });
     }
   },
 
