@@ -67,7 +67,7 @@ const app = express();
 
 // Cấu hình CORS
 app.use(cors({
-  origin: 'http://localhost:5173', // Cho phép từ origin của frontend
+  origin: '*', // Cho phép từ origin của frontend
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Các phương thức HTTP được phép
   credentials: true // Nếu bạn sử dụng cookie hoặc thông tin xác thực
 }));
