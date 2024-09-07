@@ -1,6 +1,5 @@
 const { Schema, model } = require('mongoose')
 
-
 const TeacherModel = new Schema({
   mgv: {
     type: String,
@@ -14,6 +13,11 @@ const TeacherModel = new Schema({
   classrooms: {
     type: Schema.Types.ObjectId,
     ref: 'Classroom',
+  },
+  faculty: {
+    type: Schema.Types.ObjectId,
+    ref: 'Faculty',  // Liên kết với khoa
+    required: true,
   },
 })
 
