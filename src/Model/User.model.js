@@ -3,7 +3,7 @@ const { Schema, model } = require('mongoose');
 const UserSchema = new Schema({
   deleted: {
     type: Boolean,
-    default: false
+    default: false,
   },
   gvcn: {
     type: Schema.Types.ObjectId,
@@ -14,47 +14,59 @@ const UserSchema = new Schema({
   },
   fullname: {
     type: String,
-    required: true
+    required: true,
   },
   firstName: String,
   lastName: String,
   msv: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   password: {
     type: String,
-    required: true
+    required: true,
   },
-  majorIds: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Major',
-    },
-  ], // Sử dụng mảng để lưu trữ nhiều ngành học
+  majorIds: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Major',
+  }], // Array to store multiple majors
   year: String,
   isAdmin: {
     type: Boolean,
-    default: false
+    default: false,
   },
   isGV: {
     type: Boolean,
-    default: false
+    default: false,
   },
   dob: String,
-  phone: String,
+  phone: {
+    type: String,
+    validate: {
+      validator: function(v) {
+        return /^\d{10,15}$/.test(v); // Regex to validate phone numbers
+      },
+      message: props => `${props.value} is not a valid phone number!`
+    },
+  },
   email: {
     type: String,
     required: function() {
-      return !this.isAdmin; // gvcn is required if the user is not an admin
+      return !this.isAdmin; // Email is required if the user is not an admin
     },
-    unique: true  // Đảm bào tính duy nhất
+    unique: true,
+    validate: {
+      validator: function(v) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); // Regex to validate email format
+      },
+      message: props => `${props.value} is not a valid email!`
+    },
   },
   gender: String,
   country: String,
   address: String,
-  class: String,
+  className: String, // Renamed from `class`
   parent: {
     fatherName: String,
     motherName: String,
@@ -63,11 +75,11 @@ const UserSchema = new Schema({
     parentPhone: String,
     nation: String,
     presentAddress: String,
-    permanentAddress: String
+    permanentAddress: String,
   }
 }, {
-  timestamps: true // Tự động thêm createdAt và updatedAt
+  timestamps: true // Automatically adds createdAt and updatedAt
 });
 
-const UserModel = model("User", UserSchema);
+const UserModel = model('User', UserSchema);
 module.exports = UserModel;
