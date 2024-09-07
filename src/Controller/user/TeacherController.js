@@ -45,20 +45,19 @@ module.exports = {
   getTeacher: async (req, res) => {
     const { teacherId } = req.params;
     try {
-        // Tìm giáo viên và populate trường classrooms
-        const teacher = await Teacher.findById(teacherId)
-            .populate({
-                path: 'classrooms',
-                select: '_id name' // Chọn các trường cần thiết từ lớp học
-            });
+      const teacher = await Teacher.findOne({ mgv: teacherId })
+        .populate({
+          path: 'classrooms',
+          select: '_id name'
+        });
 
-        if (!teacher) {
-            throw new NotFoundError('Teacher not found');
-        }
+      if (!teacher) {
+        return res.status(404).json({ message: 'Teacher not found' });
+      }
 
-        res.status(200).json({ data: teacher });
+      res.status(200).json({ data: teacher });
     } catch (error) {
-        res.status(500).json({ message: 'Error', error: error.message });
+      res.status(500).json({ message: 'Error', error: error.message });
     }
   }
 }

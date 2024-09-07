@@ -9,17 +9,15 @@ const { NotFoundError, BadRequestError } = require('../../core/error.response')
 const TranscriptController = {
   getAll: async (req, res) => {
     const transcripts = await Transcript.find({ deleted: false })
-      .populate({
-        path: 'student',
-        populate: {
-          path: 'majorId',
-          select: 'name'
-        }
-      })
-      .populate({
-        path: 'semester'
-      })
-
+  .populate({
+    path: 'student',
+    populate: {
+      path: 'majorId',
+      select: 'name', 
+      options: { strictPopulate: false }, 
+    },
+  })
+  .populate('semester');
     if (!transcripts) {
       throw new NotFoundError('No transcript found')
     }

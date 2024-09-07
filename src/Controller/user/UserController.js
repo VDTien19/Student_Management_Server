@@ -160,35 +160,33 @@ module.exports = {
 
 
   createAdmin: async (req, res) => {
-    // console.log('Request body:', req.body);
+    console.log('Request body:', req.body);
     const { msv, password } = req.body;
-
-    const hashPassword = await Encrypt.cryptPassword(password);
-
+    const hashPassword = await Encrypt.cryptPassword(password)
     try {
-        const newAdmin = await User.create({
-            deleted: false,
-            msv: msv,
-            password: hashPassword,
-            isAdmin: true,
-            isGV: false,
-            fullname: `admin_${msv}`,
-            email: `admin_${msv}@example.com`
-        });
+      const newAdmin = await User.create({
+        deleted: false,
+        msv: msv,
+        password: hashPassword,
+        isAdmin: true,
+        isGV: false,
+        fullname: 'admin'
+        // Các trường khác có thể được thêm vào nếu cần
+      });
 
-        // Truy vấn lại để loại bỏ `majorIds`
-        const adminData = await User.findById(newAdmin._id).select('-majorIds');
+      console.log(newAdmin);
+      const { password, ...rest } = newAdmin._doc
+      // Trả về msv và password trong phản hồi
+      res.status(200).json({
+        message: 'Tạo admin thành công',
+        data: {
+          user: rest
 
-        console.log(adminData);
-        res.status(200).json({
-            message: 'Tạo admin thành công',
-            data: {
-                user: adminData
-            }
-        });
+        }
+      });
     } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: 'Lỗi máy chủ', error: err });
+      console.log(err);
+      res.status(500).json({ message: 'Lỗi máy chủ', error: err });
     }
   },
 
@@ -340,62 +338,43 @@ module.exports = {
   },
 
   searchStudents: async (req, res) => {
-    let { keyword } = req.query;
-    keyword = keyword.trim();
+    const { keyword } = req.body;
   
-    console.log(`Searching ${keyword}`);
+    try {
+      const user = await User.findOne({ msv: keyword });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
   
-    // Tìm kiếm các majors phù hợp với keyword
-    const majors = await MajorModel.find({
-      name: { $regex: keyword, $options: 'i' }
-    }).select('_id');
-  
-    const majorIds = majors.map(major => major._id);
-  
-    // Tìm kiếm các sinh viên phù hợp với keyword trong các trường của User
-    const studentsByKeyword = await User.find({
-      $or: [
-        { msv: { $regex: keyword, $options: 'i' } },
-        { fullname: { $regex: keyword, $options: 'i' } },
-        { email: { $regex: keyword, $options: 'i' } },
-        { phone: { $regex: keyword, $options: 'i' } },
-        { class: { $regex: keyword, $options: 'i' } },
-      ],
-      deleted: false,
-      isAdmin: false,
-    }).populate({
-      path: 'majorIds', // Sử dụng majorIds thay vì majorId
-      select: 'name'
-    }).collation({ locale: 'vi', strength: 1 });
-  
-    console.log("student by key: ", studentsByKeyword);
-    console.log("-----------------------------------");
-  
-    // Tìm kiếm các sinh viên theo majorIds
-    const studentsByMajor = await User.find({
-      majorIds: { $in: majorIds }, // Tìm kiếm theo mảng majorIds
-      deleted: false,
-      isAdmin: false,
-    }).populate({
-      path: 'majorIds',
-      select: 'name'
-    }).collation({ locale: 'vi', strength: 1 });
-  
-    console.log(studentsByMajor);
-  
-    // Kết hợp kết quả từ cả hai truy vấn
-    const students = [...studentsByKeyword, ...studentsByMajor];
-  
-    // Loại bỏ các sinh viên trùng lặp
-    const uniqueStudents = students.filter((student, index, self) =>
-      index === self.findIndex((s) => s._id.toString() === student._id.toString())
-    );
-  
-    if (uniqueStudents.length === 0) {
-      throw new NotFoundError('No students found');
+      res.status(200).json({ data: user });
+    } catch (error) {
+      res.status(500).json({ message: 'Error', error: error.message });
     }
+  },
   
-    res.status(200).json({ data: uniqueStudents });
+  getProfile: async (req, res) => {
+    try {
+      // `req.userId` được gán trong middleware sau khi xác thực token
+      const userId = req.userId;
+
+      // Tìm người dùng dựa trên userId
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Trả về thông tin người dùng, ngoại trừ password
+      res.status(200).json({
+        name: user.name,
+        email: user.email,
+        msv: user.msv,
+        profilePicture: user.profilePicture || null,
+      });
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: 'Server error' });
+    }
   },
 
 
