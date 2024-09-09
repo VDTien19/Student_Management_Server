@@ -20,15 +20,19 @@ module.exports = {
         // Lấy tất cả các bản ghi chuyên cần của sinh viên
         const diligenceRecords = await Diligency.find({ studentId }).populate('courseId');
 
-        // Tính số buổi nghỉ và phân nhóm theo ngày
-        const groupedRecords = diligenceRecords.reduce((acc, record) => {
-            const dateKey = new Date(record.date).toDateString();
-            if (!acc[dateKey]) {
-                acc[dateKey] = { date: dateKey, records: [] };
+        // Tính số buổi nghỉ cho từng môn học
+        const courseAbsences = diligenceRecords.reduce((acc, record) => {
+            const courseKey = record.courseId._id.toString();
+            if (!acc[courseKey]) {
+                acc[courseKey] = {
+                    courseId: record.courseId,
+                    absenceCount: 0,
+                    records: []
+                };
             }
-            acc[dateKey].records.push({
+            acc[courseKey].absenceCount += 1; // Tính số buổi nghỉ của từng môn học
+            acc[courseKey].records.push({
                 _id: record._id,
-                courseId: record.courseId,
                 date: record.date,
                 notes: record.notes,
                 createdAt: record.createdAt,
@@ -37,25 +41,23 @@ module.exports = {
             return acc;
         }, {});
 
-        const recordsArray = Object.values(groupedRecords);
+        const coursesArray = Object.values(courseAbsences);
 
-        // Tính tổng số buổi nghỉ
-        const totalAbsences = diligenceRecords.length;
-
-        // Xác định trạng thái tổng quan dựa trên số buổi nghỉ
-        let status = 'Đủ điều kiện';
-        if (totalAbsences >= 3 && totalAbsences < 4) {
-            status = 'Cảnh báo';
-        } else if (totalAbsences >= 4) {
-            status = 'Cấm thi';
-        }
+        // Xác định trạng thái của từng môn học dựa trên số buổi nghỉ
+        coursesArray.forEach(course => {
+            if (course.absenceCount >= 3 && course.absenceCount < 4) {
+                course.status = 'Cảnh báo';
+            } else if (course.absenceCount >= 4) {
+                course.status = 'Cấm thi';
+            } else {
+                course.status = 'Đủ điều kiện';
+            }
+        });
 
         res.status(200).json({
             data: {
                 studentId,
-                totalAbsences,
-                status,
-                records: recordsArray
+                courses: coursesArray // Trả về danh sách môn học kèm trạng thái
             }
         });
     } catch (error) {
@@ -76,28 +78,15 @@ module.exports = {
             return res.status(404).json({ message: 'Student not found or has been deleted' });
         }
 
-        // Kiểm tra và chuyển đổi semesterId thành ObjectId nếu cần
-        // if (!mongoose.Types.ObjectId.isValid(semesterId)) {
-        //     return res.status(400).json({ message: 'Invalid semesterId format' });
-        // }
-        // const semester = await Semester.findById(semesterId);
-        // if (!semester) {
-        //     return res.status(404).json({ message: 'Semester not found' });
-        // }
-
         // Kiểm tra và chuyển đổi courseId thành ObjectId nếu cần
-        // if (!mongoose.Types.ObjectId.isValid(courseId)) {
-        //     return res.status(400).json({ message: 'Invalid courseId format' });
-        // }
         const course = await Course.findById(courseId);
         if (!course) {
             return res.status(404).json({ message: 'Course not found' });
         }
 
-        // Kiểm tra xem bản ghi đã tồn tại trong học kỳ và môn học
+        // Kiểm tra xem bản ghi chuyên cần đã tồn tại cho sinh viên và môn học vào ngày này chưa
         const existingRecord = await Diligency.findOne({
             studentId,
-            // semesterId,
             courseId,
             date
         });
@@ -106,28 +95,26 @@ module.exports = {
             return res.status(400).json({ message: 'Diligency record for this date already exists' });
         }
 
-        // Lấy tất cả các bản ghi chuyên cần của sinh viên trong học kỳ và môn học
-        const diligenceRecords = await Diligency.find({
+        // Lấy tất cả các bản ghi chuyên cần của sinh viên trong môn học cụ thể này
+        const diligenceRecordsForCourse = await Diligency.find({
             studentId,
-            // semesterId,
             courseId
         });
 
-        // Tính số buổi nghỉ trong học kỳ và môn học
-        const absenceCount = diligenceRecords.filter(record => record.date.toDateString() === new Date(date).toDateString()).length + 1;
+        // Tính số buổi nghỉ trong môn học cụ thể này
+        const absenceCountForCourse = diligenceRecordsForCourse.length + 1; // +1 for the new record
 
-        // Xác định trạng thái dựa trên số buổi nghỉ
+        // Xác định trạng thái dựa trên số buổi nghỉ của từng môn học
         let status = 'Đủ điều kiện';
-        if (absenceCount >= 3 && absenceCount < 4) {
+        if (absenceCountForCourse >= 3 && absenceCountForCourse < 4) {
             status = 'Cảnh báo';
-        } else if (absenceCount >= 4) {
+        } else if (absenceCountForCourse >= 4) {
             status = 'Cấm thi';
         }
 
         // Tạo bản ghi chuyên cần mới
         const newDiligency = await Diligency.create({
             studentId,
-            // semesterId,
             courseId,
             date,
             status,
@@ -177,15 +164,20 @@ module.exports = {
       diligency.date = date || diligency.date;
       diligency.notes = notes || diligency.notes;
 
-      // Tính toán số buổi nghỉ mới sau khi cập nhật
-      const diligenceRecords = await Diligency.find({ studentId: diligency.studentId });
-      const absenceCount = diligenceRecords.length;
+      // Lấy tất cả các bản ghi chuyên cần của sinh viên trong cùng một môn học
+      const diligenceRecordsForCourse = await Diligency.find({
+        studentId: diligency.studentId,
+        courseId: diligency.courseId,
+      });
 
-      // Xác định trạng thái dựa trên số buổi nghỉ
+      // Tính số buổi nghỉ trong môn học cụ thể này
+      const absenceCountForCourse = diligenceRecordsForCourse.length;
+
+      // Xác định trạng thái dựa trên số buổi nghỉ của từng môn học
       let status = 'Đủ điều kiện';
-      if (absenceCount >= 3 && absenceCount < 4) {
+      if (absenceCountForCourse >= 3 && absenceCountForCourse < 4) {
         status = 'Cảnh báo';
-      } else if (absenceCount >= 4) {
+      } else if (absenceCountForCourse >= 4) {
         status = 'Cấm thi';
       }
 
