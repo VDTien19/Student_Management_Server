@@ -27,6 +27,13 @@ const UserSchema = new Schema({
     type: String,
     required: true,
   },
+  faculty: {
+    type: Schema.Types.ObjectId,
+    ref: 'Faculty',
+    // required: function() {
+    //   return !this.isAdmin;  // Faculty is required for students, not admins or teachers
+    // }
+  },
   majorIds: [{
     type: Schema.Types.ObjectId,
     ref: 'Major',
