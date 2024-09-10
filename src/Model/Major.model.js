@@ -16,6 +16,10 @@ const MajorSchema = Schema({
     ref: 'Faculty',  // Liên kết với khoa
     required: true,
   },
+  deleted: {
+    type: Boolean,
+    default: false,
+  },
 }, {
   timestamps: true,
   collection:'majors'  // collection name in MongoDB is 'majors' not 'major'
