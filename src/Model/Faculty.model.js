@@ -13,6 +13,10 @@ const FacultySchema = new Schema({
     unique: true,
     trim: true
   },
+  deleted: {
+    type: Boolean,
+    default: false
+  },
   teachers: [{
     type: Schema.Types.ObjectId,
     ref: 'Teacher'
