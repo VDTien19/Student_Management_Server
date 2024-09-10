@@ -19,6 +19,10 @@ const TeacherModel = new Schema({
     ref: 'Faculty',  // Liên kết với khoa
     required: true,
   },
+  deleted: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const Teacher = model("Teacher", TeacherModel)
