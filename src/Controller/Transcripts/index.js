@@ -8,23 +8,39 @@ const { NotFoundError, BadRequestError } = require('../../core/error.response')
 
 const TranscriptController = {
   getAll: async (req, res) => {
-    const transcripts = await Transcript.find({ deleted: false })
-      .populate({
-        path: 'student',
-        populate: {
-          path: 'majorId',
-          select: 'name'
-        }
-      })
-      .populate({
-        path: 'semester'
-      })
-
-    if (!transcripts) {
-      throw new NotFoundError('No transcript found')
+    try {
+      // Tìm tất cả bảng điểm chưa bị xóa và populate các trường liên quan
+      const transcripts = await Transcript.find({ deleted: false })
+        .populate({
+          path: 'student',
+          populate: {
+            path: 'majorIds',
+            select: 'name'
+          }
+        })
+        .populate({
+          path: 'semester'
+        })
+        .populate({
+          path: 'grades',
+          populate: {
+            path: 'course', // Populate các trường liên quan đến môn học nếu cần
+            select: 'code name credit'
+          },
+          select: 'course midScore finalScore averageScore status'
+        });
+  
+      // Kiểm tra nếu không tìm thấy bảng điểm
+      if (transcripts.length === 0) {
+        return res.status(404).json({ message: 'No transcript found' });
+      }
+  
+      // Trả về dữ liệu bảng điểm
+      res.status(200).json({ data: transcripts });
+    } catch (error) {
+      // Xử lý lỗi
+      res.status(500).json({ message: 'Server error', error: error.message });
     }
-
-    res.status(200).json({ data: transcripts })
   },
 
   getById: async (req, res) => {
@@ -154,16 +170,21 @@ const TranscriptController = {
     }
 
     // Tổ chức dữ liệu lại cho frontend
-    const allGrades = transcripts.flatMap(transcript => transcript.grades.map(grade => ({
-      gradeId: grade._id,
-      courseCode: grade.course.code,
-      courseName: grade.course.name,
-      credit: grade.course.credit,
-      midScore: grade.midScore,
-      finalScore: grade.finalScore,
-      averageScore: grade.averageScore,
-      status: grade.status
-    })));
+    const allGrades = transcripts.flatMap(transcript => {
+      // console.log('Transcript grades:', transcript.grades);
+      return (transcript.grades || []).map(grade => ({
+        gradeId: grade._id,
+        courseCode: grade.course.code,
+        courseName: grade.course.name,
+        credit: grade.course.credit,
+        midScore: grade.midScore,
+        finalScore: grade.finalScore,
+        averageScore: grade.averageScore,
+        status: grade.status
+      }));
+    });
+
+    // console.log('All Grades:', allGrades);
 
     // Lọc các môn học trùng lặp, giữ lại môn có điểm cao nhất hoặc kỳ học gần nhất
     const uniqueGrades = allGrades.reduce((acc, current) => {

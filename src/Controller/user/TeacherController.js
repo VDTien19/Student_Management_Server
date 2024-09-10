@@ -1,12 +1,13 @@
 import Teacher from "../../Model/Teacher.model";
 const FacultyModel = require('../../Model/Faculty.model');
+const Classroom = require('../../Model/Classroom.model');
 import { NotFoundError } from "../../core/error.response";
 const Encrypt = require('../../Utils/encryption');
 
 
 module.exports = {
   createTeacher: async (req, res) => {
-    const { mgv, fullname, facultyId } = req.body;  // Thêm facultyId từ request body
+    const { mgv, fullname, facultyId } = req.body;
     const hashPassword = await Encrypt.cryptPassword(mgv);
     
     try {
@@ -81,7 +82,7 @@ module.exports = {
 
   updateTeacher: async (req, res) => {
     const { teacherId } = req.params;
-    const { mgv, fullname, facultyId } = req.body;  // Lấy facultyId từ request body
+    const { mgv, fullname, facultyId } = req.body;
     
     try {
       // Tìm giáo viên cần cập nhật
@@ -98,7 +99,7 @@ module.exports = {
           return res.status(404).json({ message: "Faculty not found" });
         }
 
-        // Xóa giáo viên khỏi khoa cũ (nếu có)
+        // Xóa giáo viên khỏi khoa cũ
         const oldFaculty = await FacultyModel.findOne({ teachers: teacherId });
         if (oldFaculty) {
           oldFaculty.teachers.pull(teacherId);
@@ -111,7 +112,7 @@ module.exports = {
       }
 
       // Cập nhật thông tin khác của giáo viên
-      teacher.mgv = mgv || teacher.mgv
+      teacher.mgv = mgv || teacher.mgv;
       teacher.fullname = fullname || teacher.fullname;
       await teacher.save();
 
@@ -119,5 +120,65 @@ module.exports = {
     } catch (e) {
       res.status(500).json({ message: "Server error", error: e.message });
     }
-  }
+  },
+
+  // Lấy tất cả sinh viên mà giáo viên đó quản lý
+  getAllStudentsByTeacher: async (req, res) => {
+    const { teacherId } = req.params;
+
+    try {
+      // Tìm giáo viên
+      const teacher = await Teacher.findById(teacherId);
+      if (!teacher) {
+        return res.status(404).json({ message: 'Teacher not found' });
+      }
+
+      // Tìm lớp học mà giáo viên đó quản lý (gvcn)
+      const classroom = await Classroom.findOne({ gvcn: teacherId }).populate('students');
+
+      if (!classroom) {
+        return res.status(404).json({ message: 'No classroom found for this teacher' });
+      }
+
+      // Trả về danh sách sinh viên trong lớp học
+      res.status(200).json({ data: classroom.students });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error: error.message });
+    }
+  },
+
+
+  // Lấy tất cả sinh viên mà giáo viên đó quản lý (1 Gv quản lý nhiều lớp)
+  // getAllStudentsByTeacher: async (req, res) => {
+  //   const { teacherId } = req.params;
+
+  //   try {
+  //     // Tìm giáo viên
+  //     const teacher = await Teacher.findById(teacherId);
+  //     if (!teacher) {
+  //       return res.status(404).json({ message: 'Teacher not found' });
+  //     }
+
+  //     // Tìm tất cả các lớp học mà giáo viên đó quản lý (gvcn)
+  //     const classrooms = await Classroom.find({ gvcn: teacherId }).populate('students');
+
+  //     if (!classrooms || classrooms.length === 0) {
+  //       return res.status(404).json({ message: 'No classrooms found for this teacher' });
+  //     }
+
+  //     // Thu thập tất cả sinh viên từ các lớp học
+  //     let allStudents = [];
+  //     classrooms.forEach(classroom => {
+  //       allStudents = allStudents.concat(classroom.students);
+  //     });
+
+  //     // Loại bỏ các sinh viên trùng lặp (nếu có)
+  //     const uniqueStudents = Array.from(new Set(allStudents.map(student => student._id.toString())))
+  //       .map(id => allStudents.find(student => student._id.toString() === id));
+
+  //     res.status(200).json({ data: uniqueStudents });
+  //   } catch (error) {
+  //     res.status(500).json({ message: 'Server error', error: error.message });
+  //   }
+  // },
 }
